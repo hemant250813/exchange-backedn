@@ -1,12 +1,13 @@
 {
 	"userRegisterValidationPasswordPattern": "Password must be a minimum of 9 alphanumeric characters.",
 	"resendOtpMobile": "The OTP has been sent to your registered email address. Please verify it to log in.",
-	"emailAlreadyExist": "emailAlreadyExist",
-	"mobileAlreadyExist": "mobileAlreadyExist",
+	"emailAlreadyExist": "Enter email ID is already exist.",
+	"mobileAlreadyExist": "Enter mobile number is already exist.",
 	"userRegisterValidationEmailEmail": "Please enter the valid email ID.",
-	"internalError": "internalError",
+	"internalError": "Internal server error.",
 	"verified": "Account has been successfully verified, Please log in now.",
 	"userNotExist": "User doesn't exist.",
 	"loginSuccess": "You have successfully logged in.",
-	"verifyOtpValidationMobileNoBase": "verifyOtpValidationMobileNoBase"
+	"verifyOtpValidationMobileNoBase": "verifyOtpValidationMobileNoBase",
+	"otpExpired": "Your OTP has been expired."
 }

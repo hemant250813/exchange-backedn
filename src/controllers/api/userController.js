@@ -10,15 +10,20 @@ const {
   FAIL,
   MAIL_SUBJECT_FORGET_PASSWORD,
 } = require("../../services/Constants");
+const { Login } = require("../../transformers/user/authTransformer");
 const {
   generateRandomNumber,
   AppName,
   newRegistration,
 } = require("../../services/Helper");
 const Mailer = require("../../services/Mailer");
-const { userRegisterValidation, verifyOtpValidation } = require("../../services/UserValidation");
+const {
+  userRegisterValidation,
+  verifyOtpValidation,
+} = require("../../services/UserValidation");
 const { User } = require("../../models");
 const { sendMail } = require("../../services/Mailer");
+const { issueUser } = require("../../services/User_jwtToken");
 
 module.exports = {
   /**
@@ -29,7 +34,6 @@ module.exports = {
   userRegistration: async (req, res) => {
     try {
       const requestParams = req.body;
-      console.log("requestParams", requestParams);
       // Below function will validate all the fields which we were passing from the body.
       userRegisterValidation(requestParams, res, async (validate) => {
         if (validate) {
@@ -49,13 +53,13 @@ module.exports = {
             return Response.successResponseWithoutData(
               res,
               res.__("emailAlreadyExist"),
-              SUCCESS
+              FAIL
             );
           } else if (user?.mobile_no === requestParams.mobile_no) {
             return Response.successResponseWithoutData(
               res,
               res.__("mobileAlreadyExist"),
-              SUCCESS
+              FAIL
             );
           } else {
             const CURRENT_DATE = new Date();
@@ -119,7 +123,6 @@ module.exports = {
   verify: async (req, res) => {
     try {
       const requestParams = req.body;
-      console.log("verify",requestParams);
       // Below function will validate all the fields which we are passing in the body.
       verifyOtpValidation(requestParams, res, async (validate) => {
         if (validate) {
@@ -156,11 +159,38 @@ module.exports = {
                 },
               });
 
-              return Response.successResponseWithoutData(
+              const USER_TOKEN_EXPIRY_TIME =
+                Math.floor(Date.now() / 1000) +
+                60 * 60 * 24 * process.env.USER_TOKEN_EXP;
+              const PAYLOAD = {
+                id: user._id,
+                exp: USER_TOKEN_EXPIRY_TIME,
+              };
+
+              let token = issueUser(PAYLOAD);
+              const META = { token };
+
+              const userDataWithImageLink = {
+                id: user?.id,
+                email: user?.email,
+                verified: user?.verified,
+                status: user?.status,
+              };
+
+              return Response.successResponseData(
                 res,
-                res.__("verified"),
-                SUCCESS
+                new Transformer.Single(userDataWithImageLink, Login).parse(),
+                SUCCESS,
+                // res.locals.__("verified"),
+                res.locals.__("loginSuccess"),
+                META
               );
+
+              // return Response.successResponseWithoutData(
+              //   res,
+              //   res.__("verified"),
+              //   SUCCESS
+              // );
             }
           } else {
             return Response.errorResponseWithoutData(
